@@ -36,10 +36,14 @@ namespace cg
 	template<typename T>
 	inline resource<T>::resource(size_t size)
 	{
+		data.resize(size);
+		stride = 0;
 	}
 	template<typename T>
 	inline resource<T>::resource(size_t x_size, size_t y_size)
 	{
+		data.resize(x_size*y_size);
+		stride = x_size;
 	}
 	template<typename T>
 	inline resource<T>::~resource()
@@ -48,27 +52,33 @@ namespace cg
 	template<typename T>
 	inline const T* resource<T>::get_data()
 	{
+		return data.data();
 	}
 	template<typename T>
 	inline T& resource<T>::item(size_t item)
 	{
+		return data.at(item);
 	}
 	template<typename T>
 	inline T& resource<T>::item(size_t x, size_t y)
 	{
+		return data.at(y*stride + x);
 	}
 	template<typename T>
 	inline size_t resource<T>::get_size_in_bytes() const
 	{
+		return data.size() * item_size;
 	}
 	template<typename T>
 	inline size_t resource<T>::get_number_of_elements() const
 	{
+		return data.size();
 	}
 
 	template<typename T>
 	inline size_t resource<T>::get_stride() const
 	{
+		return stride;
 	}
 
 	// TODO: Lab 1.02. Implement `cg::color` and `cg::unsigned_color` structs

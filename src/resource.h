@@ -42,7 +42,7 @@ namespace cg
 	template<typename T>
 	inline resource<T>::resource(size_t x_size, size_t y_size)
 	{
-		data.resize(x_size*y_size);
+		data.resize(x_size * y_size);
 		stride = x_size;
 	}
 	template<typename T>
@@ -62,7 +62,7 @@ namespace cg
 	template<typename T>
 	inline T& resource<T>::item(size_t x, size_t y)
 	{
-		return data.at(y*stride + x);
+		return data.at(y * stride + x);
 	}
 	template<typename T>
 	inline size_t resource<T>::get_size_in_bytes() const
@@ -86,9 +86,12 @@ namespace cg
 	{
 		static color from_float3(const float3& in)
 		{
+			color color{in.x, in.y, in.z};
+			return color;
 		};
 		float3 to_float3() const
 		{
+			return float3{r, g, b};
 		}
 		float r;
 		float g;
@@ -99,14 +102,29 @@ namespace cg
 	{
 		static unsigned_color from_color(const color& color)
 		{
+			unsigned_color out{};
+			out.r = std::clamp(static_cast<int>(255.f * color.r), 0, 255);
+			out.g = std::clamp(static_cast<int>(255.f * color.g), 0, 255);
+			out.b = std::clamp(static_cast<int>(255.f * color.b), 0, 255);
+			return out;
 		};
 		static unsigned_color from_float3(const float3& color)
 		{
-
+			unsigned_color out{};
+			float3 prepocessed = clamp(255.f * color, 0.f, 255.f);
+			out.r = static_cast<int>(prepocessed.x);
+			out.g = static_cast<int>(prepocessed.y);
+			out.b = static_cast<int>(prepocessed.z);
+			return out;
 		};
 		float3 to_float3() const
 		{
-
+			return float3{
+						   static_cast<float>(r),
+						   static_cast<float>(g),
+						   static_cast<float>(b),
+				   } /
+				   255.f;
 		};
 		unsigned char r;
 		unsigned char g;

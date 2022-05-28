@@ -7,6 +7,7 @@
 #include <tiny_obj_loader.h>
 
 
+
 using namespace linalg::aliases;
 
 namespace cg::world

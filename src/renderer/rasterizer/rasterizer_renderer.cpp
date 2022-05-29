@@ -33,13 +33,23 @@ void cg::renderer::rasterization_renderer::render()
 {
 	rasterizer->clear_render_target({255, 0, 0});
 
+	float4x4 matrix = mul(
+			camera->get_projection_matrix(),
+			camera->get_view_matrix(),
+			model->get_world_matrix()
+						  );
+	rasterizer->vertex_shader = [&](float4 vertex, cg::vertex vertex_data){
+		auto processed = mul(matrix, vertex);
+		return std::make_pair(processed, vertex_data);
+	};
+	// TODO: Lab 1.05. Implement `pixel_shader` lambda for the instance of `cg::renderer::rasterizer`
+
 	for (size_t shape_id = 0; shape_id < model->get_index_buffers().size(); shape_id++) {
 		rasterizer->set_vertex_buffer(model->get_vertex_buffers()[shape_id]);
 		rasterizer->set_index_buffer(model->get_index_buffers()[shape_id]);
 		rasterizer->draw(model->get_index_buffers()[shape_id]->get_number_of_elements(), 0);
 	}
-	// TODO: Lab 1.04. Implement `vertex_shader` lambda for the instance of `cg::renderer::rasterizer`
-	// TODO: Lab 1.05. Implement `pixel_shader` lambda for the instance of `cg::renderer::rasterizer`
+
 	rasterizer->pixel_shader = [](cg::vertex vertex_data, float z) {
 		return cg::color{
 				vertex_data.ambient_r,

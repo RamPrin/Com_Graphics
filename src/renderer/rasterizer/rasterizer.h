@@ -94,7 +94,28 @@ namespace cg::renderer
 	template<typename VB, typename RT>
 	inline void rasterizer<VB, RT>::draw(size_t num_vertexes, size_t vertex_offset)
 	{
-		// TODO: Lab 1.04. Add `IA` and `Vertex shader` stages to `draw` method of `cg::renderer::rasterizer`
+
+		size_t vertex_id = vertex_offset;
+		while (vertex_id < vertex_offset + num_vertexes) {
+			std::vector<VB> vertices(3);
+			for (int i = 0; i < 3; i++) {
+				vertices[i] = vertex_buffer->item(
+						index_buffer->item((vertex_id++)));
+			}
+
+			for(auto& vertex: vertices){
+				float4 coords{ vertex.x, vertex.y, vertex.z, 1.f};
+				auto processed_vertex = vertex_shader(coords,vertex);
+
+				vertex.x = processed_vertex.first.x/processed_vertex.first.w;
+				vertex.y = processed_vertex.first.y/processed_vertex.first.w;
+				vertex.z = processed_vertex.first.z/processed_vertex.first.w;
+
+				vertex.x = (vertex.x + 1.f) * width/2.f;
+				vertex.y = (-vertex.y + 1.f) * height/2.f;
+
+			}
+		}
 		// TODO: Lab 1.05. Add `Rasterization` and `Pixel shader` stages to `draw` method of `cg::renderer::rasterizer`
 
 

@@ -80,7 +80,6 @@ namespace cg
 		return stride;
 	}
 
-	// TODO: Lab 1.02. Implement `cg::color` and `cg::unsigned_color` structs
 	struct color
 	{
 		static color from_float3(const float3& in)

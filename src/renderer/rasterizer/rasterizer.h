@@ -103,22 +103,57 @@ namespace cg::renderer
 						index_buffer->item((vertex_id++)));
 			}
 
-			for(auto& vertex: vertices){
-				float4 coords{ vertex.x, vertex.y, vertex.z, 1.f};
-				auto processed_vertex = vertex_shader(coords,vertex);
+			for (auto& vertex: vertices) {
+				float4 coords{vertex.x, vertex.y, vertex.z, 1.f};
+				auto processed_vertex = vertex_shader(coords, vertex);
 
-				vertex.x = processed_vertex.first.x/processed_vertex.first.w;
-				vertex.y = processed_vertex.first.y/processed_vertex.first.w;
-				vertex.z = processed_vertex.first.z/processed_vertex.first.w;
+				vertex.x = processed_vertex.first.x / processed_vertex.first.w;
+				vertex.y = processed_vertex.first.y / processed_vertex.first.w;
+				vertex.z = processed_vertex.first.z / processed_vertex.first.w;
 
-				vertex.x = (vertex.x + 1.f) * width/2.f;
-				vertex.y = (-vertex.y + 1.f) * height/2.f;
-
+				vertex.x = (vertex.x + 1.f) * width / 2.f;
+				vertex.y = (-vertex.y + 1.f) * height / 2.f;
+			}
+			float2 bounding_box_begin{
+					std::clamp(
+							std::min(std::min(vertices[0].x, vertices[1].x), vertices[2].x),
+							0.f,
+							static_cast<float>(width - 1)),
+					std::clamp(
+							std::min(std::min(vertices[0].y, vertices[1].y), vertices[2].y),
+							0.f,
+							static_cast<float>(height - 1))};
+			float2 bounding_box_end{
+					std::clamp(
+							std::max(std::max(vertices[0].x, vertices[1].x), vertices[2].x),
+							0.f,
+							static_cast<float>(width - 1)),
+					std::clamp(
+							std::max(std::max(vertices[0].y, vertices[1].y), vertices[2].y),
+							0.f,
+							static_cast<float>(height - 1))};
+			for (int x = static_cast<int>(bounding_box_begin.x); x <= static_cast<int>(bounding_box_end.x); x++) {
+				for (int y = static_cast<int>(bounding_box_begin.y); y <= static_cast<int>(bounding_box_end.y); y++) {
+					float2 point{static_cast<float>(x), static_cast<float>(y)};
+					float edge0 = edge_function(
+							float2{vertices[0].x, vertices[0].y},
+							float2{vertices[1].x, vertices[1].y},
+							point);
+					float edge1 = edge_function(
+							float2{vertices[1].x, vertices[1].y},
+							float2{vertices[2].x, vertices[2].y},
+							point);
+					float edge2 = edge_function(
+							float2{vertices[2].x, vertices[2].y},
+							float2{vertices[0].x, vertices[0].y},
+							point);
+					if(edge0 >= 0.f && edge1 >= 0.f && edge2>= 0.f){
+						auto  pixel_result = pixel_shader(vertices[0],0.f);
+						render_target->item(x,y) = RT::from_color(pixel_result);
+					}
+				}
 			}
 		}
-		// TODO: Lab 1.05. Add `Rasterization` and `Pixel shader` stages to `draw` method of `cg::renderer::rasterizer`
-
-
 		// TODO: Lab 1.06. Add Depth test stage to draw method of cg::renderer::rasterizer
 	}
 

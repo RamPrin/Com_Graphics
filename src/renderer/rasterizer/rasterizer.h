@@ -68,6 +68,7 @@ namespace cg::renderer
 				render_target->item(i) = in_clear_value;
 			}
 		}
+		// TODO: Lab 1.06. Adjust set_render_target, and clear_render_target methods of cg::renderer::rasterizer class to consume a depth buffer
 		if(depth_buffer){
 			for (size_t i = 0; i < depth_buffer->get_number_of_elements(); i++) {
 				depth_buffer->item(i) = in_depth;
@@ -128,12 +129,6 @@ namespace cg::renderer
 							std::min(std::min(vertices[0].y, vertices[1].y), vertices[2].y),
 							0.f,
 							static_cast<float>(height - 1))};
-
-			float edge = edge_function(
-					float2{vertices[0].x, vertices[0].y},
-					float2{vertices[1].x, vertices[1].y},
-					float2{vertices[2].x, vertices[2].y});
-
 			float2 bounding_box_end{
 					std::clamp(
 							std::max(std::max(vertices[0].x, vertices[1].x), vertices[2].x),
@@ -158,23 +153,14 @@ namespace cg::renderer
 							float2{vertices[2].x, vertices[2].y},
 							float2{vertices[0].x, vertices[0].y},
 							point);
-					if(edge0 >= 0.f && edge1 >= 0.f && edge2>= 0.f ){
-						float u = edge1 / edge;
-						float v = edge2 / edge;
-						float w = edge0 / edge;
-
-						float depth = u*vertices[0].z + v*vertices[1].z + w * vertices[2].z;
-
-						if(depth_test(depth,x,y)) {
-							auto pixel_result = pixel_shader(vertices[0], depth);
-							render_target->item(x, y) = RT::from_color(pixel_result);
-							if(depth_buffer)
-								depth_buffer->item(x,y) = depth;
-						}
+					if(edge0 >= 0.f && edge1 >= 0.f && edge2>= 0.f){
+						auto  pixel_result = pixel_shader(vertices[0],0.f);
+						render_target->item(x,y) = RT::from_color(pixel_result);
 					}
 				}
 			}
 		}
+		// TODO: Lab 1.06. Add Depth test stage to draw method of cg::renderer::rasterizer
 	}
 
 	template<typename VB, typename RT>
@@ -187,9 +173,7 @@ namespace cg::renderer
 	template<typename VB, typename RT>
 	inline bool rasterizer<VB, RT>::depth_test(float z, size_t x, size_t y)
 	{
-		if(!depth_buffer)
-			return true;
-		return depth_buffer->item(x,y) > z;
+		// TODO: Lab 1.06. Implement depth_test function of cg::renderer::rasterizer class
 	}
 
 }// namespace cg::renderer

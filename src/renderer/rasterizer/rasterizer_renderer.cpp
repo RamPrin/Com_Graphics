@@ -31,7 +31,7 @@ void cg::renderer::rasterization_renderer::init()
 }
 void cg::renderer::rasterization_renderer::render()
 {
-	rasterizer->clear_render_target({11, 0, 152});
+	rasterizer->clear_render_target({255, 0, 0});
 
 	float4x4 matrix = mul(
 			camera->get_projection_matrix(),

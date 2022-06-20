@@ -144,8 +144,8 @@ namespace cg::renderer
 	{
 		for (size_t i = 0; i < render_target->get_number_of_elements(); i++) {
 			render_target->item(i) = in_clear_value;
+			history->item(i) = float3{0.f,0.f,0.f};
 		}
-		// TODO: Lab 2.06. Add `history` resource in `raytracer` class
 	}
 	template<typename VB, typename RT>
 	void raytracer<VB, RT>::set_index_buffers(std::vector<std::shared_ptr<cg::resource<unsigned int>>> in_index_buffers)
@@ -184,6 +184,8 @@ namespace cg::renderer
 		width = in_width;
 		height = in_height;
 		// TODO: Lab 2.06. Add `history` resource in `raytracer` class
+		history = std::make_shared<cg::resource<float3>>(width, height);
+
 	}
 
 	template<typename VB, typename RT>
@@ -283,7 +285,7 @@ namespace cg::renderer
 		float inv_base = 1.f/base_x;
 		float fraction = inv_base;
 		while(index > 0){
-			result.x += (index % base_x) * fracion;
+			result.x += (index % base_x) * fraction;
 			index /= base_x;
 			fraction *= inv_base;
 		}

@@ -166,12 +166,12 @@ namespace cg::renderer
 	{
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				float u = (2.f * x) / static_cast<float>(width - 1) - 1.f;
-				float v = (2.f * y) / static_cast<float>(height - 1) - 1.f;
+				float u = (2.f *  x) / static_cast<float>(width - 1) - 1.f;
+				float v = (2.f *  y) / static_cast<float>(height - 1) - 1.f;
 				u *= static_cast<float>(width) / static_cast<float>(height);
 
 				float3 ray_dir = direction + u * right - v * up;
-				ray ray(position, direction);
+				ray ray(position, ray_dir);
 
 				payload payload = trace_ray(ray, depth);
 
@@ -190,7 +190,6 @@ namespace cg::renderer
 			return miss_shader(ray);
 
 		depth--;
-
 		return miss_shader(ray);
 		// TODO: Lab 2.02. Adjust trace_ray method of raytracer class to traverse geometry and call a closest hit shader
 		// TODO: Lab 2.04. Adjust `trace_ray` method of `raytracer` to use `any_hit_shader`

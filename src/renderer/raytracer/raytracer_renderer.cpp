@@ -41,7 +41,7 @@ void cg::renderer::ray_tracing_renderer::init()
 			float3{0.78f, 0.78f, 0.78f},
 	});
 
-	// TODO: Lab 2.04. Initialize `shadow_raytracer` in `ray_tracing_renderer`
+	shadow_raytracer = std::make_shared<cg::renderer::raytracer<cg::vertex, cg::unsigned_color>>();
 }
 
 void cg::renderer::ray_tracing_renderer::destroy() {}

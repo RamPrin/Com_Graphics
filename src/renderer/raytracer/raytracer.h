@@ -54,7 +54,22 @@ namespace cg::renderer
 	inline triangle<VB>::triangle(
 			const VB& vertex_a, const VB& vertex_b, const VB& vertex_c)
 	{
-		// TODO: Lab 2.02. Implement a constructor of triangle struct
+		a = float3{vertex_a.x, vertex_a.y, vertex_a.z};
+		b = float3{vertex_b.x, vertex_b.y, vertex_b.z};
+		c = float3{vertex_c.x, vertex_c.y, vertex_c.z};
+
+		ba = b - a;
+		ca = c - a;
+
+		na = float3 {vertex_a.nx, vertex_a.ny, vertex_a.nz};
+		nb = float3 {vertex_b.nx, vertex_b.ny, vertex_b.nz};
+		nc = float3 {vertex_c.nx, vertex_c.ny, vertex_c.nz};
+
+		ambient = {vertex_a.ambient_r, vertex_a.ambient_g, vertex_a.ambient_b};
+		diffuse = {vertex_a.diffuse_r, vertex_a.diffuse_g, vertex_a.diffuse_b};
+		emissive = {vertex_a.emissive_r, vertex_a.emissive_g, vertex_a.emissive_b};
+
+
 	}
 
 	template<typename VB>
@@ -112,6 +127,7 @@ namespace cg::renderer
 		std::shared_ptr<cg::resource<float3>> history;
 		std::vector<std::shared_ptr<cg::resource<unsigned int>>> index_buffers;
 		std::vector<std::shared_ptr<cg::resource<VB>>> vertex_buffers;
+		std::vector<triangle<VB>> triangles;
 
 		size_t width = 1920;
 		size_t height = 1080;
@@ -147,6 +163,18 @@ namespace cg::renderer
 	template<typename VB, typename RT>
 	inline void raytracer<VB, RT>::build_acceleration_structure()
 	{
+		for(size_t shape_id = 0; shape_id < index_buffers.size(); shape_id++){
+			auto &index_buffer = index_buffers[shape_id];
+			auto &vertex_buffer = vertex_buffers[shape_id];
+			size_t index_id = 0;
+			while (index_id < index_buffer->get_number_of_elements()){
+				triangle<VB> triangle(
+						vertex_buffer->item(index_buffer->item(index_id++)),
+						vertex_buffer->item(index_buffer->item(index_id++)),
+						vertex_buffer->item(index_buffer->item(index_id++)));
+				triangles.push_back(triangle);
+			}
+		}
 		// TODO: Lab 2.05. Implement build_acceleration_structure method of raytracer class
 	}
 

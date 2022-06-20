@@ -52,7 +52,7 @@ void cg::renderer::ray_tracing_renderer::update() {}
 void cg::renderer::ray_tracing_renderer::render()
 {
 
-	raytracer->clear_render_target({255, 255, 255});
+	raytracer->clear_render_target({0, 0, 0});
 	raytracer->miss_shader = [](const ray& ray) {
 		payload payload{};
 		//payload.color = {0.f, 0.f, (ray.direction.y + 1.f) * 0.5f};
@@ -127,6 +127,4 @@ void cg::renderer::ray_tracing_renderer::render()
 	std::cout << "Time:" << dur.count();
 
 	cg::utils::save_resource(*render_target, settings->result_path);
-	// TODO: Lab 2.04. Adjust closest_hit_shader of raytracer to cast shadows rays and to ignore occluded lights
-	// TODO: Lab 2.05. Adjust ray_tracing_renderer class to build the acceleration structure
 }

@@ -7,6 +7,7 @@
 #include <memory>
 #include <omp.h>
 #include <random>
+#include <utility>
 
 using namespace linalg::aliases;
 
@@ -211,10 +212,10 @@ namespace cg::renderer
 					history_pixel += sqrt(float3{
 							payload.color.r,
 							payload.color.g,
-							payload.color.b,
+							payload.color.b
 					} * frame_weight);
 
-					render_target->item(x, y) = RT::from_color(payload.color);
+					render_target->item(x, y) = RT::from_float3(history_pixel);
 				}
 			}
 		}
@@ -234,7 +235,7 @@ namespace cg::renderer
 		close_hit.t = max_t;
 		const triangle<VB>* closest_trig = nullptr;
 		for (auto& aabb: acceleration_structures) {
-			if (!aabb.aabb_test((ray)))
+			if (!aabb.aabb_test(ray))
 				continue;
 			for (auto& triangle: aabb.get_triangles()) {
 				payload pl = intersection_shader(triangle, ray);
@@ -278,7 +279,7 @@ namespace cg::renderer
 			return payload;
 
 		payload.t = dot(triangle.ca, qvec) * inv_det;
-		payload.bary = float3{1.f - u - v, u, v};
+		payload.bary = float3(1.f - u - v, u, v);
 
 		return payload;
 	}

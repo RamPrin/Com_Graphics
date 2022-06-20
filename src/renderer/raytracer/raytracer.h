@@ -128,7 +128,7 @@ namespace cg::renderer
 	inline void raytracer<VB, RT>::clear_render_target(
 			const RT& in_clear_value)
 	{
-		for(size_t i = 0; i < render_target->get_number_of_elements(); i++){
+		for (size_t i = 0; i < render_target->get_number_of_elements(); i++) {
 			render_target->item(i) = in_clear_value;
 		}
 		// TODO: Lab 2.06. Add `history` resource in `raytracer` class
@@ -164,8 +164,20 @@ namespace cg::renderer
 			float3 position, float3 direction,
 			float3 right, float3 up, size_t depth, size_t accumulation_num)
 	{
-		// TODO: Lab 2.01. Implement ray_generation and trace_ray method of raytracer class
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				float u = (2.f * x) / static_cast<float>(width - 1) - 1.f;
+				float v = (2.f * y) / static_cast<float>(height - 1) - 1.f;
+				u *= static_cast<float>(width) / static_cast<float>(height);
 
+				float3 ray_dir = direction + u * right - v * up;
+				ray ray(position, direction);
+
+				payload payload = trace_ray(ray, depth);
+
+				render_target->item(x,y) = RT::from_color(payload.color);
+			}
+		}
 		// TODO: Lab 2.06. Add `history` resource in `raytracer` class
 		// TODO: Lab 2.06. Implement TAA in `ray_generation` method of `raytracer` class
 	}

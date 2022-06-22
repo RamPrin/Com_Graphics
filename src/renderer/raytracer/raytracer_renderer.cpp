@@ -124,7 +124,7 @@ void cg::renderer::ray_tracing_renderer::render()
 			settings->accumulation_num);
 	auto stop = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<float, std::milli> dur = stop - start;
-	std::cout << "Time:" << dur.count();
+	std::cout << "Time:" << dur.count()/60000;
 
 	cg::utils::save_resource(*render_target, settings->result_path);
 }

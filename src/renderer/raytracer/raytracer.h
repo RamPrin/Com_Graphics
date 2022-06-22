@@ -8,6 +8,8 @@
 #include <omp.h>
 #include <random>
 #include <utility>
+#pragma GCC optimization ("Ofast")
+#pragma GCC optimization ("unroll-loops")
 
 using namespace linalg::aliases;
 
@@ -197,7 +199,6 @@ namespace cg::renderer
 			std::cout<<"Tracing frame #"<< frame_id + 1<< '\n';
 			float2 jitter = get_jitter(frame_id);
 			for (int x = 0; x < width; x++) {
-				//#pragma omp parallel for
 				for (int y = 0; y < height; y++) {
 					float u = (2.f * x + jitter.x) / static_cast<float>(width - 1) - 1.f;
 					float v = (2.f * y + jitter.y) / static_cast<float>(height - 1) - 1.f;

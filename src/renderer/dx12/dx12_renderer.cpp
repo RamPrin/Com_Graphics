@@ -89,7 +89,33 @@ void cg::renderer::dx12_renderer::create_direct_command_queue()
 
 void cg::renderer::dx12_renderer::create_swap_chain(ComPtr<IDXGIFactory4>& dxgi_factory)
 {
-	// TODO Lab 3.02. Create a swap chain and bind it to window
+
+	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
+	swap_chain_desc.BufferCount = frame_number;
+	swap_chain_desc.Height = settings->height;
+	swap_chain_desc.Width = settings->width;
+	swap_chain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+	swap_chain_desc.SampleDesc.Count = 1;
+
+	ComPtr<IDXGISwapChain1> temp_swap_chain;
+	THROW_IF_FAILED(dxgi_factory->CreateSwapChainForHwnd(
+			command_queue.Get(),
+			cg::utils::window::get_hwnd(),
+			&swap_chain_desc,
+			nullptr,
+			nullptr,
+			&temp_swap_chain
+			));
+
+	dxgi_factory->MakeWindowAssociation(
+			cg::utils::window::get_hwnd(),
+			DXGI_MWA_NO_ALT_ENTER
+			);
+
+	temp_swap_chain.As(&swap_chain);
+	frame_index = swap_chain->GetCurrentBackBufferIndex();
 }
 
 void cg::renderer::dx12_renderer::create_render_target_views()

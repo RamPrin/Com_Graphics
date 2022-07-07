@@ -80,7 +80,11 @@ void cg::renderer::dx12_renderer::initialize_device(ComPtr<IDXGIFactory4>& dxgi_
 
 void cg::renderer::dx12_renderer::create_direct_command_queue()
 {
-	// TODO Lab 3.02. Create a command queue
+	D3D12_COMMAND_QUEUE_DESC queue_dsc = {};
+	queue_dsc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	queue_dsc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	device->CreateCommandQueue(&queue_dsc,
+							   IID_PPV_ARGS(&command_queue));
 }
 
 void cg::renderer::dx12_renderer::create_swap_chain(ComPtr<IDXGIFactory4>& dxgi_factory)

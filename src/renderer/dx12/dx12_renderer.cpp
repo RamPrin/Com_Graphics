@@ -175,6 +175,16 @@ void cg::renderer::dx12_renderer::create_pso(const std::string& shader_name)
 void cg::renderer::dx12_renderer::create_resource_on_upload_heap(ComPtr<ID3D12Resource>& resource, UINT size, const std::wstring& name)
 {
 	// TODO Lab 3.03. Implement resource creation on upload heap
+	THROW_IF_FAILED(device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(size),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&resource)));
+	if (!name.empty()) {
+		resource->SetName(name.c_str());
+	}
 }
 
 void cg::renderer::dx12_renderer::create_resource_on_default_heap(ComPtr<ID3D12Resource>& resource, UINT size, const std::wstring& name, D3D12_RESOURCE_DESC* resource_descriptor)
@@ -215,8 +225,43 @@ void cg::renderer::dx12_renderer::create_constant_buffer_view(const ComPtr<ID3D1
 
 void cg::renderer::dx12_renderer::load_assets()
 {
-	// TODO Lab 3.03. Allocate memory for vertex and index buffers
-	// TODO Lab 3.03. Create committed resources for vertex, index and constant buffers on upload heap
+	vertex_buffers.resize(model->get_vertex_buffers().size());
+	vertex_buffer_views.resize(model->get_vertex_buffers().size());
+
+	index_buffers.resize(model->get_index_buffers().size());
+	index_buffer_views.resize(model->get_index_buffers().size());
+
+	for (size_t i = 0; i < model->get_index_buffers().size(); i++) {
+		auto vertex_buffer_data = model->get_vertex_buffers()[i];
+		const UINT vertex_buffer_size = static_cast<UINT>(
+				vertex_buffer_data->get_size_in_bytes());
+
+		std::wstring vertex_buffer_name(L"Vertex buffer ");
+		vertex_buffer_name += std::to_wstring(i);
+		create_resource_on_upload_heap(
+				vertex_buffers[i],
+				vertex_buffer_size,
+				vertex_buffer_name);
+
+		auto index_buffer_data = model->get_index_buffers()[i];
+		const UINT index_buffer_size = static_cast<UINT>(
+				index_buffer_data->get_size_in_bytes());
+
+		std::wstring index_buffer_name(L"Index buffer ");
+		index_buffer_name += std::to_wstring(i);
+		create_resource_on_upload_heap(
+				index_buffers[i],
+				index_buffer_size,
+				index_buffer_name);
+	}
+
+	std::wstring const_buffer_name(L"Constant buffer ");
+	create_resource_on_upload_heap(
+			constant_buffer,
+			64 * 1024,
+			const_buffer_name);
+
+
 	// TODO Lab 3.03. Copy resource data to suitable resources
 	// TODO Lab 3.04. Create a descriptor heap for a constant buffer
 	// TODO Lab 3.04. Create a constant buffer view

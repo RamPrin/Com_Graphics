@@ -134,7 +134,7 @@ void cg::renderer::dx12_renderer::create_render_target_views()
 				nullptr,
 				rtv_heap.get_cpu_descriptor_handle(i)
 				);
-		std::wstring  name(L"Render traget ");
+		std::wstring  name(L"Render target ");
 		name += std::to_wstring(i);
 		render_targets[i]->SetName(name.c_str());
 	}
@@ -298,9 +298,12 @@ void cg::renderer::dx12_renderer::load_assets()
 	THROW_IF_FAILED(constant_buffer->Map(0, &read_range,
 											  reinterpret_cast<void**>(&constant_buffer_data_begin)));
 
-
-
-	// TODO Lab 3.04. Create a descriptor heap for a constant buffer
+	cbv_srv_heap.create_heap(
+			device,
+			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+			1,
+			D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
+			);
 	// TODO Lab 3.04. Create a constant buffer view
 }
 

@@ -6,8 +6,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <filesystem>
 #include <d3d12sdklayers.h>
+#include <filesystem>
 
 
 void cg::renderer::dx12_renderer::init()
@@ -53,7 +53,7 @@ ComPtr<IDXGIFactory4> cg::renderer::dx12_renderer::get_dxgi_factory()
 	UINT dxgi_factory_flags = 0;
 #ifdef _DEBUG
 	ComPtr<ID3D12Debug> debug_controller;
-	if(SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller)))){
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller)))) {
 		debug_controller->EnableDebugLayer();
 		dxgi_factory_flags = DXGI_CREATE_FACTORY_DEBUG
 	}
@@ -67,13 +67,15 @@ void cg::renderer::dx12_renderer::initialize_device(ComPtr<IDXGIFactory4>& dxgi_
 {
 	ComPtr<IDXGIAdapter1> hardware_adapter;
 	dxgi_factory->EnumAdapters1(0, &hardware_adapter);
-#ifdef  _DEBUG
+#ifdef _DEBUG
 	DXGI_ADAPTER_DESC adapter_desc = {};
 	hardware_adapter->GetDesc(&adapter_desc);
 	OutputDebugString(adapter_desc.Description);
 	OutputDebugString(L"\n");
 #endif
-	// TODO Lab 3.02. Create a device object
+	THROW_IF_FAILED(D3D12CreateDevice(hardware_adapter.Get(),
+									  D3D_FEATURE_LEVEL_11_0,
+									  IID_PPV_ARGS(&device)));
 }
 
 void cg::renderer::dx12_renderer::create_direct_command_queue()
@@ -192,7 +194,6 @@ void cg::renderer::dx12_renderer::load_assets()
 void cg::renderer::dx12_renderer::populate_command_list()
 {
 	// TODO Lab 3.06. Implement `populate_command_list` method
-
 }
 
 

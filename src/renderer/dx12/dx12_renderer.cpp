@@ -248,7 +248,11 @@ void cg::renderer::dx12_renderer::load_assets()
 				vertex_buffers[i],
 				vertex_buffer_size,
 				vertex_buffer_name);
-
+		
+		copy_data(vertex_buffer_data->get_data(), 
+				  vertex_buffer_size,
+				  vertex_buffers[i]);
+		
 		auto index_buffer_data = model->get_index_buffers()[i];
 		const UINT index_buffer_size = static_cast<UINT>(
 				index_buffer_data->get_size_in_bytes());
@@ -259,6 +263,10 @@ void cg::renderer::dx12_renderer::load_assets()
 				index_buffers[i],
 				index_buffer_size,
 				index_buffer_name);
+		
+		copy_data(index_buffer_data->get_data(), 
+				  index_buffer_size,
+				  index_buffers[i]);
 	}
 
 	std::wstring const_buffer_name(L"Constant buffer ");
@@ -267,8 +275,13 @@ void cg::renderer::dx12_renderer::load_assets()
 			64 * 1024,
 			const_buffer_name);
 
+	copy_data(&cb, sizeof(cb), constant_buffer);
+	CD3DX12_RANGE read_range(0,0);
+	THROW_IF_FAILED(constant_buffer->Map(0, &read_range,
+											  reinterpret_cast<void**>(&constant_buffer_data_begin)));
 
-	// TODO Lab 3.03. Copy resource data to suitable resources
+
+
 	// TODO Lab 3.04. Create a descriptor heap for a constant buffer
 	// TODO Lab 3.04. Create a constant buffer view
 }

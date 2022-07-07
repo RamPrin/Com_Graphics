@@ -36,8 +36,7 @@ void cg::renderer::dx12_renderer::init()
 	scissor_rect = CD3DX12_RECT(
 			0, 0,
 			static_cast<LONG>(settings->width),
-			static_cast<LONG>(settings->height)
-			);
+			static_cast<LONG>(settings->height));
 	load_pipeline();
 	load_assets();
 }
@@ -50,7 +49,13 @@ void cg::renderer::dx12_renderer::destroy()
 
 void cg::renderer::dx12_renderer::update()
 {
-	// TODO Lab 3.08. Implement `update` method of `dx12_renderer`
+
+	auto now = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<float> duration = now - current_time;
+	frame_duration = duration.count();
+	current_time = now;
+	cb.mwpMatrix = camera->get_dxm_mvp_matrix();
+	memcpy(constant_buffer_data_begin, &cb, sizeof(cb));
 }
 
 void cg::renderer::dx12_renderer::render()
@@ -59,8 +64,7 @@ void cg::renderer::dx12_renderer::render()
 	ID3D12CommandList* command_lists[] = {command_list.Get()};
 	command_queue->ExecuteCommandLists(
 			_countof(command_lists),
-			command_lists
-	);
+			command_lists);
 	THROW_IF_FAILED(swap_chain->Present(0, 0))
 	move_to_next_frame();
 }
@@ -162,13 +166,11 @@ void cg::renderer::dx12_renderer::create_depth_buffer()
 void cg::renderer::dx12_renderer::create_command_allocators()
 {
 	// TODO Lab 3.06. Create command allocators and a command list
-	for(auto &command_allocator: command_allocators){
+	for (auto& command_allocator: command_allocators) {
 		THROW_IF_FAILED(device->CreateCommandAllocator(
 				D3D12_COMMAND_LIST_TYPE_DIRECT,
-				IID_PPV_ARGS(&command_allocator)
-				))
+				IID_PPV_ARGS(&command_allocator)))
 	}
-
 }
 
 void cg::renderer::dx12_renderer::create_command_list()
@@ -179,8 +181,7 @@ void cg::renderer::dx12_renderer::create_command_list()
 			D3D12_COMMAND_LIST_TYPE_DIRECT,
 			command_allocators[0].Get(),
 			pipeline_state.Get(),
-			IID_PPV_ARGS(&command_list)
-			))
+			IID_PPV_ARGS(&command_list)))
 }
 
 
@@ -324,14 +325,12 @@ void cg::renderer::dx12_renderer::create_pso(const std::string& shader_name)
 			 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 			{"COLOR", 2,
 			 DXGI_FORMAT_R32G32B32_FLOAT, 0, 56,
-			 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
-	};
+			 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}};
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pso_desc = {};
 	pso_desc.InputLayout = {
 			input_descriptors,
-			_countof(input_descriptors)
-	};
+			_countof(input_descriptors)};
 
 	pso_desc.pRootSignature = root_signature.Get();
 	pso_desc.VS = CD3DX12_SHADER_BYTECODE(vertex_shader.Get());
@@ -345,14 +344,12 @@ void cg::renderer::dx12_renderer::create_pso(const std::string& shader_name)
 	pso_desc.SampleMask = UINT_MAX;
 	pso_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	pso_desc.NumRenderTargets = 1;
-	pso_desc.RTVFormats[0] =  DXGI_FORMAT_R8G8B8A8_UNORM;
+	pso_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	pso_desc.SampleDesc.Count = 1;
 
 	THROW_IF_FAILED(device->CreateGraphicsPipelineState(
 			&pso_desc,
-			IID_PPV_ARGS(&pipeline_state)
-			));
-
+			IID_PPV_ARGS(&pipeline_state)));
 }
 
 void cg::renderer::dx12_renderer::create_resource_on_upload_heap(ComPtr<ID3D12Resource>& resource, UINT size, const std::wstring& name)
@@ -511,12 +508,10 @@ void cg::renderer::dx12_renderer::populate_command_list()
 	THROW_IF_FAILED(command_allocators[frame_index]->Reset());
 	THROW_IF_FAILED(command_list->Reset(
 			command_allocators[frame_index].Get(),
-			pipeline_state.Get()
-			));
+			pipeline_state.Get()));
 
 	command_list->SetGraphicsRootSignature(
-			root_signature.Get()
-			);
+			root_signature.Get());
 	ID3D12DescriptorHeap* heaps[] = {cbv_srv_heap.get()};
 	command_list->SetDescriptorHeaps(_countof(heaps), heaps);
 	command_list->SetGraphicsRootDescriptorTable(
@@ -530,23 +525,19 @@ void cg::renderer::dx12_renderer::populate_command_list()
 			&CD3DX12_RESOURCE_BARRIER::Transition(
 					render_targets[frame_index].Get(),
 					D3D12_RESOURCE_STATE_PRESENT,
-					D3D12_RESOURCE_STATE_RENDER_TARGET
-					)
-	);
+					D3D12_RESOURCE_STATE_RENDER_TARGET));
 	// Drawing
 	command_list->OMSetRenderTargets(
 			1,
 			&rtv_heap.get_cpu_descriptor_handle(frame_index),
 			FALSE,
-			nullptr
-	);
+			nullptr);
 	const float clear_color[] = {0.f, 0.f, 0.f, 1.f};
 	command_list->ClearRenderTargetView(
 			rtv_heap.get_cpu_descriptor_handle(frame_index),
 			clear_color,
 			0,
-			nullptr
-	);
+			nullptr);
 	command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	for (size_t s = 0; s < model->get_vertex_buffers().size(); s++)
 	{
@@ -555,19 +546,15 @@ void cg::renderer::dx12_renderer::populate_command_list()
 		command_list->DrawIndexedInstanced(
 				static_cast<UINT>(
 						model->get_index_buffers()[s]->get_number_of_elements()),
-				1, 0, 0, 0
-		);
+				1, 0, 0, 0);
 	}
 	command_list->ResourceBarrier(
 			1,
 			&CD3DX12_RESOURCE_BARRIER::Transition(
 					render_targets[frame_index].Get(),
 					D3D12_RESOURCE_STATE_RENDER_TARGET,
-					D3D12_RESOURCE_STATE_PRESENT
-					)
-	);
+					D3D12_RESOURCE_STATE_PRESENT));
 	THROW_IF_FAILED(command_list->Close())
-
 }
 
 
@@ -576,15 +563,13 @@ void cg::renderer::dx12_renderer::move_to_next_frame()
 	const UINT64 current_fence_value = fence_values[frame_index];
 	THROW_IF_FAILED(command_queue->Signal(
 			fence.Get(),
-			current_fence_value
-			))
+			current_fence_value))
 	frame_index = swap_chain->GetCurrentBackBufferIndex();
 	if (fence->GetCompletedValue() < fence_values[frame_index])
 	{
 		THROW_IF_FAILED(fence->SetEventOnCompletion(
 				fence_values[frame_index],
-				fence_event
-				))
+				fence_event))
 		WaitForSingleObjectEx(fence_event, INFINITE, FALSE);
 	}
 	fence_values[frame_index] = current_fence_value + 1;
@@ -594,12 +579,10 @@ void cg::renderer::dx12_renderer::wait_for_gpu()
 {
 	THROW_IF_FAILED(command_queue->Signal(
 			fence.Get(),
-			fence_values[frame_index]
-			))
+			fence_values[frame_index]))
 	THROW_IF_FAILED(fence->SetEventOnCompletion(
 			fence_values[frame_index],
-			fence_event
-			))
+			fence_event))
 	WaitForSingleObjectEx(fence_event, INFINITE, FALSE);
 	fence_values[frame_index]++;
 }

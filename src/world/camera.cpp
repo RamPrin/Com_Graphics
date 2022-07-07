@@ -78,6 +78,7 @@ const float4x4 cg::world::camera::get_view_matrix() const
 const DirectX::XMMATRIX cg::world::camera::get_dxm_view_matrix() const
 {
 	// TODO Lab 3.08. Implement `get_dxm_view_matrix`, `get_dxm_projection_matrix`, and `get_dxm_mvp_matrix` methods of `camera`
+	return DirectX::XMMatrixIdentity();
 }
 
 const DirectX::XMMATRIX cg::world::camera::get_dxm_projection_matrix() const

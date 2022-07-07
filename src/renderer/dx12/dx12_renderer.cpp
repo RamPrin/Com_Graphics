@@ -106,13 +106,11 @@ void cg::renderer::dx12_renderer::create_swap_chain(ComPtr<IDXGIFactory4>& dxgi_
 			&swap_chain_desc,
 			nullptr,
 			nullptr,
-			&temp_swap_chain
-			));
+			&temp_swap_chain));
 
 	dxgi_factory->MakeWindowAssociation(
 			cg::utils::window::get_hwnd(),
-			DXGI_MWA_NO_ALT_ENTER
-			);
+			DXGI_MWA_NO_ALT_ENTER);
 
 	temp_swap_chain.As(&swap_chain);
 	frame_index = swap_chain->GetCurrentBackBufferIndex();
@@ -141,7 +139,11 @@ void cg::renderer::dx12_renderer::create_command_list()
 
 void cg::renderer::dx12_renderer::load_pipeline()
 {
-	// TODO Lab 3.02. Bring everything together in `load_pipeline` method
+
+	ComPtr<IDXGIFactory4> dxgi_factory = get_dxgi_factory();
+	initialize_device(dxgi_factory);
+	create_swap_chain(dxgi_factory);
+	create_render_target_views();
 }
 
 D3D12_STATIC_SAMPLER_DESC cg::renderer::dx12_renderer::get_sampler_descriptor()

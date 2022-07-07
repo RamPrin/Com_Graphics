@@ -122,19 +122,16 @@ void cg::renderer::dx12_renderer::create_render_target_views()
 	rtv_heap.create_heap(
 			device,
 			D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
-			frame_number
-			);
-	for(UINT i =0; i < frame_number; i++){
+			frame_number);
+	for (UINT i = 0; i < frame_number; i++) {
 		THROW_IF_FAILED(swap_chain->GetBuffer(
 				i,
-				IID_PPV_ARGS(&render_targets[i])
-				));
+				IID_PPV_ARGS(&render_targets[i])));
 		device->CreateRenderTargetView(
 				render_targets[i].Get(),
 				nullptr,
-				rtv_heap.get_cpu_descriptor_handle(i)
-				);
-		std::wstring  name(L"Render target ");
+				rtv_heap.get_cpu_descriptor_handle(i));
+		std::wstring name(L"Render target ");
 		name += std::to_wstring(i);
 		render_targets[i]->SetName(name.c_str());
 	}
@@ -178,22 +175,19 @@ void cg::renderer::dx12_renderer::create_root_signature(const D3D12_STATIC_SAMPL
 
 	ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
 				   1, 0, 0,
-				   D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
-				   );
+				   D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
 
 	root_parameters[0].InitAsDescriptorTable(
 			1, &ranges[0],
-			D3D12_SHADER_VISIBILITY_VERTEX
-			);
+			D3D12_SHADER_VISIBILITY_VERTEX);
 
 	D3D12_FEATURE_DATA_ROOT_SIGNATURE rs_feature_data = {};
 	rs_feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
 
-	if(FAILED(device->CheckFeatureSupport(
+	if (FAILED(device->CheckFeatureSupport(
 				D3D12_FEATURE_ROOT_SIGNATURE,
 				&rs_feature_data,
-				sizeof(rs_feature_data)
-				)))
+				sizeof(rs_feature_data))))
 	{
 		rs_feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
 	}
@@ -206,8 +200,7 @@ void cg::renderer::dx12_renderer::create_root_signature(const D3D12_STATIC_SAMPL
 			root_parameters,
 			0,
 			nullptr,
-			rs_flags
-			);
+			rs_flags);
 
 	ComPtr<ID3DBlob> signature;
 	ComPtr<ID3DBlob> error;
@@ -216,11 +209,10 @@ void cg::renderer::dx12_renderer::create_root_signature(const D3D12_STATIC_SAMPL
 			&rs_descriptor,
 			rs_feature_data.HighestVersion,
 			&signature,
-			&error
-			);
+			&error);
 
-	if(FAILED(result)){
-		OutputDebugStringA((char*)error->GetBufferPointer());
+	if (FAILED(result)) {
+		OutputDebugStringA((char*) error->GetBufferPointer());
 		THROW_IF_FAILED(result);
 	}
 
@@ -228,8 +220,7 @@ void cg::renderer::dx12_renderer::create_root_signature(const D3D12_STATIC_SAMPL
 			0,
 			signature->GetBufferPointer(),
 			signature->GetBufferSize(),
-			IID_PPV_ARGS(&root_signature)
-			));
+			IID_PPV_ARGS(&root_signature)));
 }
 
 std::filesystem::path cg::renderer::dx12_renderer::get_shader_path(const std::string& shader_name)
@@ -237,8 +228,8 @@ std::filesystem::path cg::renderer::dx12_renderer::get_shader_path(const std::st
 	WCHAR buffer[MAX_PATH];
 	GetModuleFileName(nullptr, buffer, MAX_PATH);
 	auto shader_path = std::filesystem::path(buffer).parent_path() /
-	shader_name;
-	return  shader_path;
+					   shader_name;
+	return shader_path;
 }
 
 ComPtr<ID3DBlob> cg::renderer::dx12_renderer::compile_shader(const std::filesystem::path& shader_path, const std::string& entrypoint, const std::string& target)
@@ -252,18 +243,17 @@ ComPtr<ID3DBlob> cg::renderer::dx12_renderer::compile_shader(const std::filesyst
 #endif
 
 	HRESULT result = D3DCompileFromFile(
-							 shader_path.wstring().c_str(),
-							 nullptr,
-							 nullptr,
-							 entrypoint.c_str(),
-							 target.c_str(),
-							 compile_flags,
-							 0,
-							 &shader,
-							 &error
-							 );
-	if(FAILED(result)){
-		OutputDebugStringA((char*)error->GetBufferPointer());
+			shader_path.wstring().c_str(),
+			nullptr,
+			nullptr,
+			entrypoint.c_str(),
+			target.c_str(),
+			compile_flags,
+			0,
+			&shader,
+			&error);
+	if (FAILED(result)) {
+		OutputDebugStringA((char*) error->GetBufferPointer());
 		THROW_IF_FAILED(result);
 	}
 	return shader;
@@ -271,7 +261,65 @@ ComPtr<ID3DBlob> cg::renderer::dx12_renderer::compile_shader(const std::filesyst
 
 void cg::renderer::dx12_renderer::create_pso(const std::string& shader_name)
 {
-	// TODO Lab 3.05. Setup a PSO descriptor and create a PSO
+
+	ComPtr<ID3DBlob> vertex_shader = compile_shader(
+			get_shader_path(shader_name),
+			"VSMain",
+			"vs_5_0");
+
+	ComPtr<ID3DBlob> pixel_shader = compile_shader(
+			get_shader_path(shader_name),
+			"PSMain",
+			"ps_5_0");
+
+
+	D3D12_INPUT_ELEMENT_DESC input_descriptors[] = {
+			{"POSITION", 0,
+			 DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+			 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"NORMAL", 0,
+			 DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,
+			 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0,
+			 DXGI_FORMAT_R32G32B32_FLOAT, 0, 24,
+			 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"COLOR", 0,
+			 DXGI_FORMAT_R32G32B32_FLOAT, 0, 32,
+			 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"COLOR", 1,
+			 DXGI_FORMAT_R32G32B32_FLOAT, 0, 44,
+			 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"COLOR", 2,
+			 DXGI_FORMAT_R32G32B32_FLOAT, 0, 56,
+			 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+	};
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC pso_desc = {};
+	pso_desc.InputLayout = {
+			input_descriptors,
+			_countof(input_descriptors)
+	};
+
+	pso_desc.pRootSignature = root_signature.Get();
+	pso_desc.VS = CD3DX12_SHADER_BYTECODE(vertex_shader.Get());
+	pso_desc.PS = CD3DX12_SHADER_BYTECODE(pixel_shader.Get());
+	pso_desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	pso_desc.RasterizerState.FrontCounterClockwise = TRUE;
+	pso_desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+	pso_desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	pso_desc.DepthStencilState.DepthEnable = FALSE;
+	pso_desc.DepthStencilState.StencilEnable = FALSE;
+	pso_desc.SampleMask = UINT_MAX;
+	pso_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	pso_desc.NumRenderTargets = 1;
+	pso_desc.RTVFormats[0] =  DXGI_FORMAT_R8G8B8A8_UNORM;
+	pso_desc.SampleDesc.Count = 1;
+
+	THROW_IF_FAILED(device->CreateGraphicsPipelineState(
+			&pso_desc,
+			IID_PPV_ARGS(&pipeline_state)
+			));
+
 }
 
 void cg::renderer::dx12_renderer::create_resource_on_upload_heap(ComPtr<ID3D12Resource>& resource, UINT size, const std::wstring& name)
@@ -295,13 +343,13 @@ void cg::renderer::dx12_renderer::create_resource_on_default_heap(ComPtr<ID3D12R
 
 void cg::renderer::dx12_renderer::copy_data(const void* buffer_data, UINT buffer_size, ComPtr<ID3D12Resource>& destination_resource)
 {
-	UINT8 * buffer_data_begin;
-	CD3DX12_RANGE read_range(0,0);
+	UINT8* buffer_data_begin;
+	CD3DX12_RANGE read_range(0, 0);
 	THROW_IF_FAILED(destination_resource->Map(0, &read_range,
 											  reinterpret_cast<void**>(&buffer_data_begin)));
 
 	memcpy(buffer_data_begin, buffer_data, buffer_size);
-	destination_resource->Unmap(0,0);
+	destination_resource->Unmap(0, 0);
 }
 
 void cg::renderer::dx12_renderer::copy_data(const void* buffer_data, const UINT buffer_size, ComPtr<ID3D12Resource>& destination_resource, ComPtr<ID3D12Resource>& intermediate_resource, D3D12_RESOURCE_STATES state_after, int row_pitch, int slice_pitch)
@@ -358,15 +406,14 @@ void cg::renderer::dx12_renderer::load_assets()
 				vertex_buffers[i],
 				vertex_buffer_size,
 				vertex_buffer_name);
-		
-		copy_data(vertex_buffer_data->get_data(), 
+
+		copy_data(vertex_buffer_data->get_data(),
 				  vertex_buffer_size,
 				  vertex_buffers[i]);
 
 		vertex_buffer_views[i] = create_vertex_buffer_view(
 				vertex_buffers[i],
-				vertex_buffer_size
-				);
+				vertex_buffer_size);
 
 		auto index_buffer_data = model->get_index_buffers()[i];
 		const UINT index_buffer_size = static_cast<UINT>(
@@ -378,15 +425,14 @@ void cg::renderer::dx12_renderer::load_assets()
 				index_buffers[i],
 				index_buffer_size,
 				index_buffer_name);
-		
-		copy_data(index_buffer_data->get_data(), 
+
+		copy_data(index_buffer_data->get_data(),
 				  index_buffer_size,
 				  index_buffers[i]);
 
 		index_buffer_views[i] = create_index_buffer_view(
 				index_buffers[i],
-				index_buffer_size
-				);
+				index_buffer_size);
 	}
 
 	std::wstring const_buffer_name(L"Constant buffer ");
@@ -396,22 +442,19 @@ void cg::renderer::dx12_renderer::load_assets()
 			const_buffer_name);
 
 	copy_data(&cb, sizeof(cb), constant_buffer);
-	CD3DX12_RANGE read_range(0,0);
+	CD3DX12_RANGE read_range(0, 0);
 	THROW_IF_FAILED(constant_buffer->Map(0, &read_range,
-											  reinterpret_cast<void**>(&constant_buffer_data_begin)));
+										 reinterpret_cast<void**>(&constant_buffer_data_begin)));
 
 	cbv_srv_heap.create_heap(
 			device,
 			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
 			1,
-			D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
-			);
+			D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 	create_constant_buffer_view(
 			constant_buffer,
-			cbv_srv_heap.get_cpu_descriptor_handle(0)
-			);
-
+			cbv_srv_heap.get_cpu_descriptor_handle(0));
 }
 
 
@@ -441,16 +484,14 @@ void cg::renderer::descriptor_heap::create_heap(ComPtr<ID3D12Device>& device, D3
 
 	THROW_IF_FAILED(device->CreateDescriptorHeap(
 			&heap_desc,
-			IID_PPV_ARGS(&heap)
-			));
+			IID_PPV_ARGS(&heap)));
 	descriptor_size = device->GetDescriptorHandleIncrementSize(
-			type
-			);
+			type);
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE cg::renderer::descriptor_heap::get_cpu_descriptor_handle(UINT index) const
 {
-	CD3DX12_CPU_DESCRIPTOR_HANDLE(
+	return CD3DX12_CPU_DESCRIPTOR_HANDLE(
 			heap->GetCPUDescriptorHandleForHeapStart(),
 			static_cast<INT>(index),
 			descriptor_size);
@@ -458,7 +499,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE cg::renderer::descriptor_heap::get_cpu_descriptor_ha
 
 D3D12_GPU_DESCRIPTOR_HANDLE cg::renderer::descriptor_heap::get_gpu_descriptor_handle(UINT index) const
 {
-	CD3DX12_GPU_DESCRIPTOR_HANDLE(
+	return CD3DX12_GPU_DESCRIPTOR_HANDLE(
 			heap->GetGPUDescriptorHandleForHeapStart(),
 			static_cast<INT>(index),
 			descriptor_size);
